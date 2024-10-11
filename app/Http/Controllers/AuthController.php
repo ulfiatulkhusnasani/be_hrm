@@ -11,30 +11,38 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
+    // Method untuk registrasi pengguna baru
     public function register(Request $request)
     {
         // Validasi input untuk register
         $request->validate([
             'nama_karyawan' => 'required|string|max:255', // Nama Karyawan
-            'nik' => 'required|string|max:16',             // NIK
+            'nik' => 'required|string|max:16',            // NIK
             'email' => 'required|string|email|max:255|unique:users', // Email
-            'no_handphone' => 'required|string|max:15',    // No Handphone
-            'alamat' => 'required|string|max:255',         // Alamat
-            'kata_sandi' => 'required|string|min:6',       // Kata Sandi
+            'no_handphone' => 'required|string|max:15',   // No Handphone
+            'alamat' => 'required|string|max:255',        // Alamat
+            'kata_sandi' => 'required|string|min:6',      // Kata Sandi
             'konfirmasi_kata_sandi' => 'required|same:kata_sandi', // Konfirmasi Kata Sandi
         ]);
 
         // Membuat user baru
-        return User::create([
+        $user = User::create([
             'name' => $request->input('nama_karyawan'),        // Menyimpan nama karyawan
-            'nik' => $request->input('nik'),                     // Menyimpan NIK
-            'email' => $request->input('email'),                 // Menyimpan email
-            'noHandphone' => $request->input('no_handphone'),   // Menyimpan no handphone
-            'alamat' => $request->input('alamat'),               // Menyimpan alamat
+            'nik' => $request->input('nik'),                   // Menyimpan NIK
+            'email' => $request->input('email'),               // Menyimpan email
+            'noHandphone' => $request->input('no_handphone'),  // Menyimpan no handphone
+            'alamat' => $request->input('alamat'),             // Menyimpan alamat
             'password' => Hash::make($request->input('kata_sandi')) // Meng-hash kata sandi
         ]);
+
+        // Kembalikan respons JSON
+        return response()->json([
+            'message' => 'Registration successful',
+            'user' => $user
+        ], 201); // HTTP 201 untuk Created
     }
 
+    // Method untuk login pengguna
     public function login(Request $request)
     {
         // Validasi data request
@@ -44,7 +52,7 @@ class AuthController extends Controller
         ]);
 
         // Mencoba autentikasi pengguna
-        if (!Auth::attempt($request->only('email', 'kata_sandi'))) {
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->kata_sandi])) {
             // Mencatat percobaan login yang gagal
             \Log::warning('Login attempt failed for email: ' . $request->email);
 
@@ -56,34 +64,38 @@ class AuthController extends Controller
         // Membuat token untuk pengguna yang terautentikasi
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Mengembalikan token dan data pengguna dalam JSON
         return response()->json([
             'token' => $token,
             'user' => $user,
         ]);
     }
 
+    // Method untuk mengambil data pengguna yang sedang login
     public function user()
     {
         $user = Auth::user();
 
         if ($user) {
-            // Mengembalikan data pengguna yang sedang login
+            // Mengembalikan data pengguna yang sedang login dalam format JSON
             return response()->json($user, 200);
         }
 
         return response()->json([
             'message' => 'Unauthenticated.'
-        ], 401);
+        ], 401); // HTTP 401 Unauthorized
     }
 
+    // Method untuk logout pengguna
     public function logout(Request $request)
     {
         // Menghapus token akses saat ini
         $request->user()->currentAccessToken()->delete();
 
-        // Hapus cookie JWT jika digunakan
+        // Menghapus cookie JWT jika digunakan
         $cookie = Cookie::forget('jwt');
 
+        // Kembalikan respons JSON dengan pesan logout sukses
         return response()->json([
             'message' => 'Successfully logged out'
         ])->withCookie($cookie); // Mengembalikan cookie ke response

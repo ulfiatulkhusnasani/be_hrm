@@ -33,7 +33,7 @@ class AbsensiController extends Controller
         try {
             // Validasi data absensi
             $validatedData = $request->validate([
-                'nama' => 'required|string|max:255',
+                'nama_karyawan' => 'required|string|max:255',  // Perbaiki kolom sesuai dengan model
                 'tanggal' => 'required|date',
                 'time_in' => 'nullable|date_format:H:i',
                 'time_out' => 'nullable|date_format:H:i|after:time_in',
@@ -86,7 +86,7 @@ class AbsensiController extends Controller
 
             // Validasi data absensi
             $validatedData = $request->validate([
-                'nama' => 'string|max:255',
+                'nama_karyawan' => 'string|max:255',  // Sesuaikan dengan model
                 'tanggal' => 'date',
                 'time_in' => 'nullable|date_format:H:i',
                 'time_out' => 'nullable|date_format:H:i|after:time_in',

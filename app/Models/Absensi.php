@@ -14,7 +14,7 @@ class Absensi extends Model
     
     // Kolom yang dapat diisi melalui mass assignment
     protected $fillable = [
-        'nama',      // Nama karyawan yang melakukan absensi
+        'nama_karyawan',      // Nama karyawan yang melakukan absensi
         'tanggal',   // Tanggal absensi
         'time_in',   // Waktu masuk
         'time_out',  // Waktu keluar
